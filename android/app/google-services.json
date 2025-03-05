@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "317063348459",
+    "project_id": "froarit-masjid",
+    "storage_bucket": "froarit-masjid.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317063348459:android:ba0753fdbe5091e40afeae",
+        "android_client_info": {
+          "package_name": "com.froarit.firebasetest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "317063348459-n014e5ujcqtekpe08leej2rierlrch6l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.froarit.firebasetest",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "317063348459-mqt0tt10giu9mlftrptdvkhs8ohlupds.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9UkcrOCphuIW-Fz95gGaGBDDNhT_CjaI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "317063348459-mqt0tt10giu9mlftrptdvkhs8ohlupds.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
