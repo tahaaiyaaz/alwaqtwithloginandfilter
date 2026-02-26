@@ -1,22 +1,22 @@
-
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useState } from "react";
+import { View, Text, Button, StyleSheet } from "react-native";
 
 const AddFavoritesComponent = ({ userId, masjidId }) => {
   const [updateResponse, setUpdateResponse] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const addFavorite = async (userId, masjidId) => {
-    const apiUrl = 'https://helloworld-ftfo4ql2pa-el.a.run.app/updateUser';
+    console.log(userId, masjidId);
+    const apiUrl = "https://helloworld-ftfo4ql2pa-el.a.run.app/updateUser";
     try {
       setLoading(true);
       // Send a PUT request with updates containing the favorites array with the new masjidId.
       const response = await fetch(apiUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId, 
-          updates: { favorites: [masjidId] } // Adjust as needed if you want to append rather than overwrite.
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          updates: { favorites: [masjidId] }, // Adjust as needed if you want to append rather than overwrite.
         }),
       });
       if (!response.ok) {
@@ -48,7 +48,7 @@ const AddFavoritesComponent = ({ userId, masjidId }) => {
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  title: { fontSize: 20, fontWeight: "bold", marginBottom: 10 },
   response: { marginTop: 10 },
 });
 

@@ -1,539 +1,3 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   Dimensions,
-//   TouchableOpacity,
-//   ActivityIndicator,
-//   ScrollView,
-// } from "react-native";
-// import NearestMasjidCard from "./NearestMasjidCard";
-// import CurrentLocationUI from "./CurrentLocationUI";
-
-// export default function HomePage({ navigation }) {
-//   const [masjidData, setMasjidData] = useState();
-//   const [earlierMasjidData, setEarlierMasjidData] = useState();
-//   const [laterMasjidData, setLaterMasjidData] = useState();
-//   const [showAllNearby, setShowAllNearby] = useState(false);
-//   const [showAllEarlier, setShowAllEarlier] = useState(false);
-//   const [showAllLater, setShowAllLater] = useState(false);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setTimeout(() => {
-//           const fetchedMasjids = [
-//             { id: 1, details: { name: "masjida" }, distance: "2 km", nextNamazTime: "12:00 PM" },
-//             { id: 2, details: { name: "masjida" }, distance: "3 km", nextNamazTime: "1:00 PM" },
-//             { id: 3, details: { name: "masjida" }, distance: "5 km", nextNamazTime: "9:00 AM" },
-//             { id: 4, details: { name: "masjida" }, distance: "1 km", nextNamazTime: "10:00 AM" },
-//             { id: 5, details: { name: "masjida" }, distance: "4 km", nextNamazTime: "4:00 PM" },
-//             { id: 6, details: { name: "masjida" }, distance: "6 km", nextNamazTime: "5:00 PM" },
-//           ];
-
-//           // For demonstration, we use the first 3 for all sections.
-//           setMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setEarlierMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setLaterMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setIsLoading(false);
-//         }, 2000);
-//       } catch (error) {
-//         setIsLoading(false);
-//         console.error("Error fetching data", error);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   // Render function for Nearby Masjids
-//   const renderMasjidList = (data, showAll, setShowAll) => {
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       return (
-//         <>
-//           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-//             {data.masjids
-//               .slice(0, showAll ? data.masjids.length : 2)
-//               .map((masjid) => (
-//                 <TouchableOpacity key={masjid.id}>
-//                   <NearestMasjidCard
-//                     MasjidName={masjid.details.name}
-//                     MasjidDistance={masjid.distance}
-//                     NextNamazTime={masjid.nextNamazTime}
-//                     navigation={navigation}
-//                     masjid={masjid}
-//                   />
-//                 </TouchableOpacity>
-//               ))}
-//           </ScrollView>
-//           {data.masjids.length > 2 && (
-//             <TouchableOpacity
-//               style={styles.showMoreButton}
-//               onPress={() => setShowAll(!showAll)}
-//             >
-//               <Text style={styles.showMoreText}>
-//                 {showAll ? "Show Less" : "Show More"}
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-//         </>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   // Render function for Earlier Prayer Masjids
-//   const renderMasjidListForEarlier = (data, showAll, setShowAll) => {
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       return (
-//         <>
-//           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-//             {data.masjids
-//               .slice(0, showAll ? data.masjids.length : 2)
-//               .map((masjid) => (
-//                 <NearestMasjidCard
-//                   key={masjid.mosqueId || masjid.id}
-//                   MasjidName={masjid.mosqueName || masjid.details.name}
-//                   MasjidDistance={masjid.distance || "20"}
-//                   NextNamazTime={masjid.time || masjid.nextNamazTime}
-//                   navigation={navigation}
-//                   masjid={masjid}
-//                 />
-//               ))}
-//           </ScrollView>
-//           {data.masjids.length > 2 && (
-//             <TouchableOpacity
-//               style={styles.showMoreButton}
-//               onPress={() => setShowAll(!showAll)}
-//             >
-//               <Text style={styles.showMoreText}>
-//                 {showAll ? "Show Less" : "Show More"}
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-//         </>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   // Render function for Later Prayer Masjids (with reversed order)
-//   const renderMasjidListForLater = (earliermasjids, showAll, setShowAll) => {
-//     let data = earliermasjids;
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       // Create a reversed copy without mutating the state
-//       const reversedMasjids = [...data.masjids].reverse();
-//       return (
-//         <>
-//           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-//             {reversedMasjids
-//               .slice(0, showAll ? reversedMasjids.length : 2)
-//               .map((masjid) => (
-//                 <NearestMasjidCard
-//                   key={masjid.mosqueId || masjid.id}
-//                   MasjidName={masjid.mosqueName || masjid.details.name}
-//                   MasjidDistance={masjid.distance || "20"}
-//                   NextNamazTime={masjid.time || masjid.nextNamazTime}
-//                   navigation={navigation}
-//                   masjid={masjid}
-//                 />
-//               ))}
-//           </ScrollView>
-//           {data.masjids.length > 2 && (
-//             <TouchableOpacity
-//               style={styles.showMoreButton}
-//               onPress={() => setShowAll(!showAll)}
-//             >
-//               <Text style={styles.showMoreText}>
-//                 {showAll ? "Show Less" : "Show More"}
-//               </Text>
-//             </TouchableOpacity>
-//           )}
-//         </>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   return (
-//     <ScrollView
-//       style={styles.container}
-//       contentContainerStyle={styles.scrollContent}
-//       showsVerticalScrollIndicator={false}
-//     >
-//       <CurrentLocationUI
-//         setMasjidData={setMasjidData}
-//         setEarlierMasjidData={setEarlierMasjidData}
-//         setLaterMasjidData={setLaterMasjidData}
-//       />
-
-//       {/* Nearby Masjids Section */}
-//       <Text style={styles.subHeadings}>Nearby</Text>
-//       {renderMasjidList(masjidData, showAllNearby, setShowAllNearby)}
-
-//       {/* Earlier Prayer Masjids Section */}
-//       <Text style={styles.subHeadings}>Earlier Prayer Masjids</Text>
-//       {renderMasjidListForEarlier(earlierMasjidData, showAllEarlier, setShowAllEarlier)}
-
-//       {/* Later Prayer Masjids Section */}
-//       <Text style={styles.subHeadings}>Later Prayer Masjids</Text>
-//       {renderMasjidListForLater(earlierMasjidData, showAllLater, setShowAllLater)}
-//     </ScrollView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#E2F1E7",
-//   },
-//   scrollContent: {
-//     flexGrow: 1,
-//     width: Dimensions.get("window").width,
-//     paddingHorizontal: 30,
-//     paddingTop: 50,
-//     paddingBottom: 50, // Added padding for better scrolling experience
-//   },
-//   subHeadings: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#387478",
-//     marginTop: 10,
-//     marginBottom: 5,
-//   },
-//   showMoreText: {
-//     fontSize: 16,
-//     color: "#E2F1E7",
-//   },
-//   showMoreButton: {
-//     backgroundColor: "#387478",
-//     height: 40,
-//     width: 120,
-//     borderRadius: 10,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     marginVertical: 10,
-//     alignSelf: "center",
-//   },
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   Dimensions,
-//   TouchableOpacity,
-//   ActivityIndicator,
-//   ScrollView,
-// } from "react-native";
-// import NearestMasjidCard from "./NearestMasjidCard";
-// import CurrentLocationUI from "./CurrentLocationUI";
-
-// export default function HomePage({ navigation }) {
-//   const [masjidData, setMasjidData] = useState();
-//   const [earlierMasjidData, setEarlierMasjidData] = useState();
-//   const [laterMasjidData, setLaterMasjidData] = useState();
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         setTimeout(() => {
-//           const fetchedMasjids = [
-//             {
-//               id: 1,
-//               details: { name: "masjida" },
-//               distance: "2 km",
-//               nextNamazTime: "12:00 PM",
-//             },
-//             {
-//               id: 2,
-//               details: { name: "masjida" },
-//               distance: "3 km",
-//               nextNamazTime: "1:00 PM",
-//             },
-//             {
-//               id: 3,
-//               details: { name: "masjida" },
-//               distance: "5 km",
-//               nextNamazTime: "9:00 AM",
-//             },
-//             {
-//               id: 4,
-//               details: { name: "masjida" },
-//               distance: "1 km",
-//               nextNamazTime: "10:00 AM",
-//             },
-//             {
-//               id: 5,
-//               details: { name: "masjida" },
-//               distance: "4 km",
-//               nextNamazTime: "4:00 PM",
-//             },
-//             {
-//               id: 6,
-//               details: { name: "masjida" },
-//               distance: "6 km",
-//               nextNamazTime: "5:00 PM",
-//             },
-//           ];
-
-//           // For demonstration, we use the first 3 for all sections.
-//           setMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setEarlierMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setLaterMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-//           setIsLoading(false);
-//         }, 2000);
-//       } catch (error) {
-//         setIsLoading(false);
-//         console.error("Error fetching data", error);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   // Render function for Nearby Masjids
-//   const renderMasjidNearList = (data) => {
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       return (
-//         <ScrollView
-//           style={styles.scrollViewStyle}
-//           contentContainerStyle={styles.scrollViewContainerStyle}
-//           horizontal
-//           showsHorizontalScrollIndicator={false}
-//         >
-//           {data.masjids.map((masjid) => (
-//             <View key={masjid.id}>
-//               <NearestMasjidCard
-//                 MasjidName={masjid.details.name}
-//                 MasjidDistance={masjid.distance}
-//                 NextNamazTime={masjid.nextNamazTime}
-//                 navigation={navigation}
-//                 masjid={masjid}
-//               />
-//             </View>
-//           ))}
-//         </ScrollView>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   // Render function for Earlier Prayer Masjids
-//   const renderMasjidListForEarlier = (data) => {
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       return (
-//         <ScrollView
-//           style={styles.scrollViewStyle}
-//           contentContainerStyle={styles.scrollViewContainerStyle}
-//           horizontal
-//           showsHorizontalScrollIndicator={false}
-//         >
-//           {data.masjids.map((masjid) => (
-//             <NearestMasjidCard
-//               key={masjid.mosqueId || masjid.id}
-//               MasjidName={masjid.mosqueName || masjid.details.name}
-//               MasjidDistance={masjid.distance || "20"}
-//               NextNamazTime={masjid.time || masjid.nextNamazTime}
-//               navigation={navigation}
-//               masjid={masjid}
-//             />
-//           ))}
-//         </ScrollView>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   // Render function for Later Prayer Masjids (with reversed order)
-//   const renderMasjidListForLater = (earliermasjids) => {
-//     let data = earliermasjids;
-//     if (data && data.masjids && data.masjids.length !== 0) {
-//       // Create a reversed copy without mutating the state
-//       const reversedMasjids = [...data.masjids].reverse();
-//       return (
-//         <ScrollView
-//           style={styles.scrollViewStyle}
-//           contentContainerStyle={styles.scrollViewContainerStyle}
-//           horizontal
-//           showsHorizontalScrollIndicator={false}
-//         >
-//           {reversedMasjids.map((masjid) => (
-//             <NearestMasjidCard
-//               key={masjid.mosqueId || masjid.id}
-//               MasjidName={masjid.mosqueName || masjid.details.name}
-//               MasjidDistance={masjid.distance || "20"}
-//               NextNamazTime={masjid.time || masjid.nextNamazTime}
-//               navigation={navigation}
-//               masjid={masjid}
-//             />
-//           ))}
-//         </ScrollView>
-//       );
-//     } else if (isLoading) {
-//       return <ActivityIndicator size="large" color="#387478" />;
-//     } else {
-//       return <Text>No masjid data available.</Text>;
-//     }
-//   };
-
-//   return (
-//     <ScrollView
-//       style={styles.container}
-//       contentContainerStyle={styles.scrollContent}
-//       showsVerticalScrollIndicator={false}
-//     >
-//       <CurrentLocationUI
-//         setMasjidData={setMasjidData}
-//         setEarlierMasjidData={setEarlierMasjidData}
-//         setLaterMasjidData={setLaterMasjidData}
-//       />
-
-//       {/* Nearby Masjids Section */}
-//       <Text style={styles.subHeadings}>Nearby Mass</Text>
-//       {renderMasjidNearList(masjidData)}
-
-//       {/* Earlier Prayer Masjids Section */}
-//       <Text style={styles.subHeadings}>Earlier Prayer Masjids</Text>
-//       {renderMasjidListForEarlier(earlierMasjidData)}
-
-//       {/* Later Prayer Masjids Section */}
-//       <Text style={styles.subHeadings}>Later Prayer Masjids</Text>
-//       {renderMasjidListForLater(earlierMasjidData)}
-//     </ScrollView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#E2F1E7",
-//   },
-//   scrollContent: {
-//     //flexGrow: 1,
-//     width: Dimensions.get("window").width,
-//     paddingHorizontal: 35,
-//     paddingTop: 40,
-//     paddingBottom: 40, // Added padding for better scrolling experience
-//   },
-//   subHeadings: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#387478",
-//     marginTop: 20,
-//     marginBottom: 20,
-//   },
-
-//   scrollViewContainerStyle: {
-//     paddingTop: 5,
-//     paddingBottom: 5,
-//   },
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -544,220 +8,379 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
+import * as Location from "expo-location";
 import NearestMasjidCard from "./NearestMasjidCard";
-import CurrentLocationUI from "./CurrentLocationUI";
+import SearchBar from "./SearchBar";
+import FilterButton from "./filterbutton";
+import FilterPopover from "./filterpopover";
+import PrayerTimeComponent from "./arragemasjidsaccordingtotime";
+import { COLORS, FONTS, SIZES } from "./Theme";
 
+// Helper functions (moved from CurrentLocationUI)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; 
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; 
+};
+
+const timeToMinutes = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string') return null;
+  timeStr = timeStr.trim();
+  if (timeStr.toUpperCase().includes("AM") || timeStr.toUpperCase().includes("PM")) {
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = parseInt(match[2], 10);
+      const period = match[3].toUpperCase();
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    }
+  }
+  const parts = timeStr.split(":");
+  if (parts.length >= 2) {
+    const hours = parseInt(parts[0], 10);
+    const minutes = parseInt(parts[1], 10);
+    if (!isNaN(hours) && !isNaN(minutes)) return hours * 60 + minutes;
+  }
+  return null;
+};
+
+const getNextPrayer = (timings) => {
+  if (!timings) return { name: "N/A", time: "N/A", minutes: null };
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const prayers = [
+    { name: "Fajr", time: timings.fajr },
+    { name: "Dhuhr", time: timings.dhuhr },
+    { name: "Asr", time: timings.asar || timings.asr },
+    { name: "Maghrib", time: timings.maghrib },
+    { name: "Isha", time: timings.isha },
+  ].filter(p => p.time)
+   .map(p => ({ ...p, minutes: timeToMinutes(p.time) }))
+   .filter(p => p.minutes !== null);
+  
+  const nextPrayer = prayers.find(p => p.minutes > currentMinutes);
+  if (nextPrayer) {
+    const minsUntil = nextPrayer.minutes - currentMinutes;
+    return { name: nextPrayer.name, time: nextPrayer.time, minsUntil: minsUntil };
+  }
+  if (prayers.length > 0) {
+    const firstPrayer = prayers[0];
+    const minsUntil = (24 * 60 - currentMinutes) + firstPrayer.minutes;
+    return { name: firstPrayer.name, time: firstPrayer.time, minsUntil: minsUntil };
+  }
+  return { name: "N/A", time: "N/A", minsUntil: null };
+};
+
+const processMasjids = (masjids, userLat, userLng) => {
+  if (!masjids || !Array.isArray(masjids)) return [];
+  return masjids.map(masjid => {
+    let distance = null;
+    if (masjid.location && masjid.location.latitude && masjid.location.longitude) {
+      distance = calculateDistance(userLat, userLng, masjid.location.latitude, masjid.location.longitude);
+    }
+    const nextPrayer = getNextPrayer(masjid.details?.timings);
+    return {
+      ...masjid,
+      distance: distance,
+      distanceText: distance !== null 
+        ? (distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`)
+        : "N/A",
+      nextPrayer: nextPrayer.name,
+      nextPrayerTime: nextPrayer.time,
+      minsUntilPrayer: nextPrayer.minsUntil,
+      time: nextPrayer.time, 
+    };
+  }).sort((a, b) => {
+    if (a.distance === null) return 1;
+    if (b.distance === null) return -1;
+    return a.distance - b.distance;
+  });
+};
 
 export default function HomePage({ navigation }) {
-
-  const [masjidData, setMasjidData] = useState();
-  const [earlierMasjidData, setEarlierMasjidData] = useState();
-  const [laterMasjidData, setLaterMasjidData] = useState();
+  // State from CurrentLocationUI
+  const [userLocation, setUserLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sendCoords, setSendCoords] = useState({});
+  const [Filters, setFilters] = useState({});
+  const [data, setData] = useState({ masjids: [] });
+  const [isPopoverVisible, setIsPopoverVisible] = useState(false);
+
+  // State for Lists
+  const [masjidData, setMasjidData] = useState(null);
+  const [earlierMasjidData, setEarlierMasjidData] = useState(null);
+  
+  // Handlers
+  const openPopover = () => setIsPopoverVisible(true);
+  const closePopover = () => setIsPopoverVisible(false);
+
+  const handleApplyFilter = async (filter) => {
+    closePopover();
+    setFilters(filter);
+    const lat = sendCoords.lat || userLocation?.coords?.latitude;
+    const lng = sendCoords.lng || userLocation?.coords?.longitude;
+    if (lat && lng) {
+      getallnearestmasjids(lat, lng);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setTimeout(() => {
-          const fetchedMasjids = [
-            {
-              id: 1,
-              details: { name: "masjida" },
-              distance: "2 km",
-              nextNamazTime: "12:00 PM",
-            },
-            {
-              id: 2,
-              details: { name: "masjida" },
-              distance: "3 km",
-              nextNamazTime: "1:00 PM",
-            },
-            {
-              id: 3,
-              details: { name: "masjida" },
-              distance: "5 km",
-              nextNamazTime: "9:00 AM",
-            },
-            {
-              id: 4,
-              details: { name: "masjida" },
-              distance: "1 km",
-              nextNamazTime: "10:00 AM",
-            },
-            {
-              id: 5,
-              details: { name: "masjida" },
-              distance: "4 km",
-              nextNamazTime: "4:00 PM",
-            },
-            {
-              id: 6,
-              details: { name: "masjida" },
-              distance: "6 km",
-              nextNamazTime: "5:00 PM",
-            },
-          ];
-
-          // For demonstration, we use the first 3 for all sections.
-          setMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-          setEarlierMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-          setLaterMasjidData({ masjids: fetchedMasjids.slice(0, 3) });
-          setIsLoading(false);
-        }, 2000);
-      } catch (error) {
-        setIsLoading(false);
-        console.error("Error fetching data", error);
-      }
-    };
-
-    fetchData();
+    initLocation();
   }, []);
 
-  // Render function for Nearby Masjids
-  const renderMasjidNearList = (data) => {
-    console.log(data)
-    if (data && data.masjids && data.masjids.length !== 0) {
-      return (
-        <ScrollView
-          style={styles.scrollViewStyle}
-          contentContainerStyle={styles.scrollViewContainerStyle}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {data.masjids.map((masjid) => (
-            <View key={masjid.id}>
-              <NearestMasjidCard
-                MasjidName={masjid.details.name}
-                MasjidDistance={masjid.distance}
-                NextNamazTime={masjid.nextNamazTime}
-                navigation={navigation}
-                masjid={masjid}
-              />
-            </View>
-          ))}
-        </ScrollView>
-      );
-    } else if (isLoading) {
-      return <ActivityIndicator size="large" color="#387478" />;
-    } else {
-      return <Text>No masjid data available.</Text>;
+  const initLocation = async () => {
+    setIsLoading(true);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        setIsLoading(false);
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      setUserLocation(location);
+      getallnearestmasjids(location.coords.latitude, location.coords.longitude);
+    } catch (error) {
+      console.error("Location error:", error);
+      setErrorMsg("Could not get location");
+      setIsLoading(false);
     }
   };
 
-  // Render function for Earlier Prayer Masjids
-  const renderMasjidListForEarlier = (data) => {
-    console.log(data)
-    if (data && data.masjids && data.masjids.length !== 0) {
-      return (
-        <ScrollView
-          style={styles.scrollViewStyle}
-          contentContainerStyle={styles.scrollViewContainerStyle}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {data.masjids.map((masjid) => (
-            <NearestMasjidCard
-              key={masjid.mosqueId || masjid.id}
-              MasjidName={masjid.mosqueName || masjid.details.name}
-              MasjidDistance={masjid.distance || "20"}
-              NextNamazTime={masjid.time || masjid.nextNamazTime}
-              navigation={navigation}
-              masjid={masjid}
-            />
-          ))}
-        </ScrollView>
+  const getallnearestmasjids = async (latitude, longitude, radius = "30") => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `https://helloworld-ftfo4ql2pa-el.a.run.app/getNearestMasjid?latitude=${latitude}&longitude=${longitude}&radiusInKm=${radius}`
       );
-    } else if (isLoading) {
-      return <ActivityIndicator size="large" color="#387478" />;
-    } else {
-      return <Text>No masjid data available.</Text>;
+      const json = await response.json();
+      if (json && json.masjids) {
+        const processedMasjids = processMasjids(json.masjids, latitude, longitude);
+        const processedData = { ...json, masjids: processedMasjids };
+        setData(processedData);
+        setMasjidData(processedData);
+        setEarlierMasjidData(processedData);
+      } else {
+        setData({ masjids: [] });
+        setMasjidData({ masjids: [] });
+      }
+    } catch (error) {
+      setErrorMsg(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Render function for Later Prayer Masjids (with reversed order)
-  const renderMasjidListForLater = (earliermasjids) => {
-    console.log(earliermasjids)
-    let data = earliermasjids;
-    if (data && data.masjids && data.masjids.length !== 0) {
-      // Create a reversed copy without mutating the state
-      const reversedMasjids = [...data.masjids].reverse();
+  const renderSectionHeader = (title, onMorePress) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <TouchableOpacity onPress={onMorePress}>
+        <Text style={styles.moreText}>See All</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderMasjidList = (data, listId) => {
+    if (!data || !data.masjids || data.masjids.length === 0) {
       return (
-        <ScrollView
-          style={styles.scrollViewStyle}
-          contentContainerStyle={styles.scrollViewContainerStyle}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-        >
-          {reversedMasjids.map((masjid) => (
-            <NearestMasjidCard
-              key={masjid.mosqueId || masjid.id}
-              MasjidName={masjid.mosqueName || masjid.details.name}
-              MasjidDistance={masjid.distance || "20"}
-              NextNamazTime={masjid.time || masjid.nextNamazTime}
-              navigation={navigation}
-              masjid={masjid}
-            />
-          ))}
-        </ScrollView>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No masjids found</Text>
+        </View>
       );
-    } else if (isLoading) {
-      return <ActivityIndicator size="large" color="#387478" />;
-    } else {
-      return <Text>No masjid data available.</Text>;
     }
+    let items = [...data.masjids];
+    if (listId === "later") items = items.reverse();
+    items = items.slice(0, 5);
+
+    return (
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listContent}>
+        {items.map((masjid, index) => (
+          <NearestMasjidCard
+            key={masjid.id || masjid.mosqueId || index}
+            MasjidName={masjid.details?.name || masjid.mosqueName}
+            MasjidDistance={masjid.distanceText || masjid.distance}
+            NextNamazTime={masjid.nextPrayerTime || masjid.time}
+            navigation={navigation}
+            masjid={masjid}
+          />
+        ))}
+      </ScrollView>
+    );
+  };
+
+  const showmoremasjids = () => {
+    if (masjidData) navigation.navigate("MasjidList", { masjidData });
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
+      {/* Header Container with Search */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerTopRow}>
+            <View>
+                <Text style={styles.greeting}>Find Peace</Text>
+                <Text style={styles.subGreeting}>Nearest Masjids & Prayer Times</Text>
+            </View>
+        </View>
+        
+        <View style={styles.searchRow}>
+           <View style={{ flex: 1 }}>
+                <SearchBar
+                    setSendCoords={(coords) => {
+                        setSendCoords(coords);
+                        if (coords.lat && coords.lng) {
+                        getallnearestmasjids(coords.lat, coords.lng);
+                        }
+                    }}
+                    getallnearestmasjids={getallnearestmasjids}
+                />
+           </View>
+           <FilterButton onPress={openPopover} />
+        </View>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            {isLoading && (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Finding nearby masjids...</Text>
+                </View>
+            )}
 
-      <CurrentLocationUI
-        setMasjidData={setMasjidData}
-        setEarlierMasjidData={setEarlierMasjidData}
-        setLaterMasjidData={setLaterMasjidData}
+            {errorMsg && !isLoading && (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{errorMsg}</Text>
+                </View>
+            )}
+        
+            {/* Logic for processed lists */}
+             <PrayerTimeComponent
+                mosqueData={data}
+                setEarlierMasjidData={setEarlierMasjidData}
+                setMasjidData={setMasjidData}
+                Filters={Filters}
+             />
+
+            {/* Nearby Masjids Section */}
+            {renderSectionHeader("Nearby", showmoremasjids)}
+            {renderMasjidList(masjidData, "nearby")}
+
+            {/* Earlier Prayer Section */}
+            {renderSectionHeader("Early Prayer", showmoremasjids)}
+            {renderMasjidList(earlierMasjidData || masjidData, "earlier")}
+
+            {/* Later Prayer Section */}
+            {renderSectionHeader("Late Prayer", showmoremasjids)}
+            {renderMasjidList(earlierMasjidData || masjidData, "later")}
+
+            <View style={{ height: 100 }} />
+      </ScrollView>
+      
+      <FilterPopover
+        visible={isPopoverVisible}
+        onClose={closePopover}
+        onApply={handleApplyFilter}
       />
-
-      {/* Nearby Masjids Section */}
-      <Text style={styles.subHeadings}>Nearby Masjids</Text>
-      {renderMasjidNearList(masjidData)}
-
-      {/* Earlier Prayer Masjids Section */}
-      <Text style={styles.subHeadings}>Earlier Prayer Masjids</Text>
-      {renderMasjidListForEarlier(earlierMasjidData)}
-
-      {/* Later Prayer Masjids Section */}
-      <Text style={styles.subHeadings}>Later Prayer Masjids</Text>
-      {renderMasjidListForLater(earlierMasjidData)}
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#E2F1E7",
+    backgroundColor: COLORS.background,
+  },
+  headerContainer: {
+    paddingHorizontal: SIZES.padding,
+    paddingTop: 50, // More top padding for status bar
+    paddingBottom: SIZES.padding,
+    backgroundColor: COLORS.surface,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: 10,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    zIndex: 100, // Ensure search autocomplete sits on top
+  },
+  headerTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 15,
+  },
+  greeting: {
+    ...FONTS.h1,
+    color: COLORS.primary,
+  },
+  subGreeting: {
+    ...FONTS.body3,
+    marginTop: 5,
+    marginBottom: 5,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: 'space-between',
   },
   scrollContent: {
-    //flexGrow: 1,
-    width: Dimensions.get("window").width,
-    paddingHorizontal: 35,
-    paddingTop: 40,
-    paddingBottom: 40, // Added padding for better scrolling experience
+    paddingBottom: 40,
   },
-  subHeadings: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#387478",
-    marginTop: 20,
-    marginBottom: 20,
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: SIZES.padding,
+    marginTop: 10,
+    marginBottom: 10,
   },
-
-  scrollViewContainerStyle: {
-    paddingTop: 5,
-    paddingBottom: 5,
+  sectionTitle: {
+    ...FONTS.h2,
+  },
+  moreText: {
+    ...FONTS.body3,
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+  listContent: {
+    paddingHorizontal: SIZES.padding,
+    paddingBottom: 10,
+  },
+  emptyContainer: {
+    paddingHorizontal: SIZES.padding,
+    paddingVertical: 30,
+    alignItems: "center",
+  },
+  emptyText: {
+    ...FONTS.body3,
+    fontStyle: "italic",
+    color: COLORS.textSecondary,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    ...FONTS.body3,
+    color: COLORS.textSecondary,
+    marginTop: 10,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  errorText: {
+    ...FONTS.body3,
+    color: COLORS.error,
   },
 });

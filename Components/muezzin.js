@@ -1,11 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS, FONTS, SIZES } from "./Theme";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Muezzin() {
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>your masjid will appear here</Text>
-      <Text style={styles.subText}>all the details of your masjid will appear</Text>
+      <Ionicons name="business" size={80} color={COLORS.primary} style={{ marginBottom: 20 }} />
+      <Text style={styles.heading}>Your Masjid</Text>
+      <Text style={styles.subText}>
+        All the details of your masjid will appear here soon.
+      </Text>
     </View>
   );
 }
@@ -15,16 +20,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#E2F1E7",
+    backgroundColor: COLORS.background,
+    padding: SIZES.padding,
   },
   heading: {
-    fontSize: 30,
-    color: "#387478",
-    fontWeight: "bold",
+    ...FONTS.h1,
+    color: COLORS.primary,
+    marginBottom: 10,
   },
   subText: {
-    fontSize: 18,
-    color: "#387478",
-    marginTop: 10,
+    ...FONTS.body3,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
   },
 });

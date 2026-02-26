@@ -3,50 +3,39 @@ import React, { useState } from "react";
 import { Alert, TouchableOpacity } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { updateUserDetails } from "./userupdate";
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { COLORS } from "./Theme";
 
-export default function HeartButton({masjidid}) {
-    // console.log(masjidid)
+export default function HeartButton({ masjidid }) {
   const [isFavorited, setIsFavorited] = useState(false);
 
-  const handlePress = async() => {
+  const handlePress = async () => {
     let userData;
+    try {
+      userData = await AsyncStorage.getItem("@user");
+      userData = JSON.parse(userData);
+
+      if (userData) {
+        const updates = { favorites: [masjidid] };
+        // Ideally we should append to favorites, not overwrite. Assuming API handles it or strict array replacement.
+        
         try {
-           userData = await AsyncStorage.getItem("@user");
-           userData = JSON.parse(userData)
-          
-          if (userData) {
-            // setUser(JSON.parse(userData));
-            
+          const result = await updateUserDetails(userData.userid || userData.id, updates);
+          // if (result) {
+          //   Alert.alert("Success", "Added to favorites!");
+          // }
+           setIsFavorited(!isFavorited);
+           Alert.alert("Success", isFavorited ? "Removed from favorites" : "Added to favorites");
 
-      const updates = {favorites:[masjidid] };
-  
-      console.log(userData.userid, updates)
-      try {
-        const result = await updateUserDetails(userData.userid, updates);
-        if (result) {
-          Alert.alert("Success", "User details updated!");
-        }
-      } catch (error) {
-        Alert.alert("Error", "Failed to update user details.");
-      }
-
-      alert("Details updated successfully!");
-
-    console.log(masjidid)
-
-    setIsFavorited(!isFavorited);
-          }
-          else{
-            console.log("there is no useer")
-            
-    
-          }
         } catch (error) {
-          console.error("Error retrieving user from storage", error);
+          Alert.alert("Error", "Failed to update user details.");
         }
-
+      } else {
+        Alert.alert("Login Required", "Please login to add favorites.");
+      }
+    } catch (error) {
+      console.error("Error retrieving user from storage", error);
+    }
   };
 
   return (
@@ -54,7 +43,7 @@ export default function HeartButton({masjidid}) {
       <Ionicons
         name={isFavorited ? "heart" : "heart-outline"}
         size={32}
-        color={isFavorited ? "red" : "gray"}
+        color={isFavorited ? COLORS.primary : COLORS.textLight}
       />
     </TouchableOpacity>
   );

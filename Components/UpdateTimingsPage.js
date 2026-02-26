@@ -1,594 +1,111 @@
-// import React, { useState } from "react";
-// import { 
-//   ScrollView,
-//   View, 
-//   Text, 
-//   StyleSheet, 
-//   Dimensions, 
-//   TouchableOpacity, 
-//   Alert, 
-//   TextInput 
-// } from "react-native";
-// import DateTimePicker from "@react-native-community/datetimepicker";
-
-// export default function UpdateTimingsPage({ route, navigation }) {
-//   const { masjid } = route.params;
-//   const currentTimings = masjid.details?.timings || {};
-
-//   // Helper functions to parse and format times.
-//   const parseTime = (timeStr) => {
-//     if (!timeStr) return new Date();
-//     const [hours, minutes] = timeStr.split(":").map(Number);
-//     const date = new Date();
-//     date.setHours(hours);
-//     date.setMinutes(minutes);
-//     date.setSeconds(0);
-//     return date;
-//   };
-
-//   const formatTime = (date) => {
-//     if (!date) return "";
-//     let hours = date.getHours();
-//     let minutes = date.getMinutes();
-//     hours = hours < 10 ? "0" + hours : hours;
-//     minutes = minutes < 10 ? "0" + minutes : minutes;
-//     return `${hours}:${minutes}`;
-//   };
-
-//   // Standard prayer timings (pre-filled if available)
-//   const [fajr, setFajr] = useState(currentTimings.fajr ? parseTime(currentTimings.fajr) : new Date());
-//   const [dhuhr, setDhuhr] = useState(currentTimings.dhuhr ? parseTime(currentTimings.dhuhr) : new Date());
-//   const [asar, setAsar] = useState(currentTimings.asar ? parseTime(currentTimings.asar) : new Date());
-//   const [maghrib, setMaghrib] = useState(currentTimings.maghrib ? parseTime(currentTimings.maghrib) : new Date());
-//   const [isha, setIsha] = useState(currentTimings.isha ? parseTime(currentTimings.isha) : new Date());
-
-//   // Dynamic sections for Jumma and Taraweeh
-//   const [jummaTimings, setJummaTimings] = useState([]); // Array of Date objects
-//   const [taraweehEntries, setTaraweehEntries] = useState([]); // Each entry: { time: Date, parah: string, startDate: Date }
-
-//   /* 
-//     activePicker object holds info about which picker is active.
-//     Structure:
-//       { 
-//         type: "prayer" | "jumma" | "taraweeh",
-//         field: (for prayer: "fajr"/"dhuhr"/"asar"/"maghrib"/"isha"; for taraweeh: "time" or "startDate"),
-//         index: (for jumma or taraweeh entries),
-//         pickerType: "time" or "date"
-//       }
-//   */
-//   const [activePicker, setActivePicker] = useState(null);
-
-//   // Determine the current value for the picker.
-//   let currentPickerValue = new Date();
-//   if (activePicker) {
-//     if (activePicker.type === "prayer") {
-//       if (activePicker.field === "fajr") currentPickerValue = fajr;
-//       else if (activePicker.field === "dhuhr") currentPickerValue = dhuhr;
-//       else if (activePicker.field === "asar") currentPickerValue = asar;
-//       else if (activePicker.field === "maghrib") currentPickerValue = maghrib;
-//       else if (activePicker.field === "isha") currentPickerValue = isha;
-//     } else if (activePicker.type === "jumma") {
-//       currentPickerValue = jummaTimings[activePicker.index] || new Date();
-//     } else if (activePicker.type === "taraweeh") {
-//       if (activePicker.field === "time") {
-//         currentPickerValue = taraweehEntries[activePicker.index].time;
-//       } else if (activePicker.field === "startDate") {
-//         currentPickerValue = taraweehEntries[activePicker.index].startDate;
-//       }
-//     }
-//   }
-
-//   const handlePickerChange = (event, selectedDate) => {
-//     if (selectedDate) {
-//       if (activePicker.type === "prayer") {
-//         if (activePicker.field === "fajr") setFajr(selectedDate);
-//         else if (activePicker.field === "dhuhr") setDhuhr(selectedDate);
-//         else if (activePicker.field === "asar") setAsar(selectedDate);
-//         else if (activePicker.field === "maghrib") setMaghrib(selectedDate);
-//         else if (activePicker.field === "isha") setIsha(selectedDate);
-//       } else if (activePicker.type === "jumma") {
-//         const updated = [...jummaTimings];
-//         updated[activePicker.index] = selectedDate;
-//         setJummaTimings(updated);
-//       } else if (activePicker.type === "taraweeh") {
-//         const updated = [...taraweehEntries];
-//         if (activePicker.field === "time") {
-//           updated[activePicker.index].time = selectedDate;
-//         } else if (activePicker.field === "startDate") {
-//           updated[activePicker.index].startDate = selectedDate;
-//         }
-//         setTaraweehEntries(updated);
-//       }
-//     }
-//     setActivePicker(null);
-//   };
-
-//   // Functions to add new entries
-//   const addJummaTiming = () => {
-//     setJummaTimings([...jummaTimings, new Date()]);
-//   };
-
-//   const addTaraweehEntry = () => {
-//     setTaraweehEntries([...taraweehEntries, { time: new Date(), parah: "", startDate: new Date() }]);
-//   };
-
-//   const handleTaraweehParahChange = (index, value) => {
-//     const updated = [...taraweehEntries];
-//     updated[index].parah = value;
-//     setTaraweehEntries(updated);
-//   };
-
-//   // On submit, consolidate data and log it.
-//   const handleSubmit = () => {
-//     const data = {
-//       prayerTimings: {
-//         fajr: formatTime(fajr),
-//         dhuhr: formatTime(dhuhr),
-//         asar: formatTime(asar),
-//         maghrib: formatTime(maghrib),
-//         isha: formatTime(isha),
-//       },
-//       jummaTimings: jummaTimings.map(time => formatTime(time)),
-//       taraweehEntries: taraweehEntries.map(entry => ({
-//         time: formatTime(entry.time),
-//         parah: entry.parah,
-//         startDate: entry.startDate.toDateString(),
-//       })),
-//     };
-
-//     console.log("Updated Timings Data:", data);
-//     Alert.alert("Thank you!", "Your prayer timings have been updated.", [
-//       {
-//         text: "OK",
-//         onPress: () => navigation.goBack(),
-//       },
-//     ]);
-//   };
-
-//   return (
-//     <ScrollView contentContainerStyle={styles.container}>
-//       <Text style={styles.heading}>Update Prayer Timings</Text>
-
-//       {/* Standard Prayer Timings */}
-//       <View style={styles.inputGroup}>
-//         <Text style={styles.label}>Fajr:</Text>
-//         <TouchableOpacity 
-//           style={styles.timePickerButton} 
-//           onPress={() => setActivePicker({ type: "prayer", field: "fajr", pickerType: "time" })}
-//         >
-//           <Text style={styles.timePickerText}>{formatTime(fajr)}</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.inputGroup}>
-//         <Text style={styles.label}>Dhuhr:</Text>
-//         <TouchableOpacity 
-//           style={styles.timePickerButton} 
-//           onPress={() => setActivePicker({ type: "prayer", field: "dhuhr", pickerType: "time" })}
-//         >
-//           <Text style={styles.timePickerText}>{formatTime(dhuhr)}</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.inputGroup}>
-//         <Text style={styles.label}>Asr:</Text>
-//         <TouchableOpacity 
-//           style={styles.timePickerButton} 
-//           onPress={() => setActivePicker({ type: "prayer", field: "asar", pickerType: "time" })}
-//         >
-//           <Text style={styles.timePickerText}>{formatTime(asar)}</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.inputGroup}>
-//         <Text style={styles.label}>Maghrib:</Text>
-//         <TouchableOpacity 
-//           style={styles.timePickerButton} 
-//           onPress={() => setActivePicker({ type: "prayer", field: "maghrib", pickerType: "time" })}
-//         >
-//           <Text style={styles.timePickerText}>{formatTime(maghrib)}</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.inputGroup}>
-//         <Text style={styles.label}>Isha:</Text>
-//         <TouchableOpacity 
-//           style={styles.timePickerButton} 
-//           onPress={() => setActivePicker({ type: "prayer", field: "isha", pickerType: "time" })}
-//         >
-//           <Text style={styles.timePickerText}>{formatTime(isha)}</Text>
-//         </TouchableOpacity>
-//       </View>
-
-//       {/* Jumma Timings Section */}
-//       <Text style={styles.sectionHeading}>Jumma Timings</Text>
-//       {jummaTimings.map((time, index) => (
-//         <View key={index} style={styles.dynamicRow}>
-//           <TouchableOpacity 
-//             style={styles.timePickerButton} 
-//             onPress={() => setActivePicker({ type: "jumma", index, pickerType: "time" })}
-//           >
-//             <Text style={styles.timePickerText}>{formatTime(time)}</Text>
-//           </TouchableOpacity>
-//         </View>
-//       ))}
-//       <TouchableOpacity style={styles.addButton} onPress={addJummaTiming}>
-//         <Text style={styles.addButtonText}>Add Jumma Timing</Text>
-//       </TouchableOpacity>
-
-//       {/* Taraweeh Section */}
-//       <Text style={styles.sectionHeading}>Taraweeh</Text>
-//       {taraweehEntries.map((entry, index) => (
-//         <View key={index} style={styles.taraweehRow}>
-//           <View style={styles.taraweehField}>
-//             <Text style={styles.label}>Timing:</Text>
-//             <TouchableOpacity 
-//               style={styles.timePickerButton} 
-//               onPress={() => setActivePicker({ type: "taraweeh", index, field: "time", pickerType: "time" })}
-//             >
-//               <Text style={styles.timePickerText}>{formatTime(entry.time)}</Text>
-//             </TouchableOpacity>
-//           </View>
-//           <View style={styles.taraweehField}>
-//             <Text style={styles.label}>Parah:</Text>
-//             <TextInput
-//               style={styles.input}
-//               value={entry.parah}
-//               onChangeText={(value) => handleTaraweehParahChange(index, value)}
-//               placeholder="Enter number of parah"
-//               keyboardType="numeric"
-//             />
-//           </View>
-//           <View style={styles.taraweehField}>
-//             <Text style={styles.label}>Start Date:</Text>
-//             <TouchableOpacity 
-//               style={styles.timePickerButton} 
-//               onPress={() => setActivePicker({ type: "taraweeh", index, field: "startDate", pickerType: "date" })}
-//             >
-//               <Text style={styles.timePickerText}>{entry.startDate.toDateString()}</Text>
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//       ))}
-//       <TouchableOpacity style={styles.addButton} onPress={addTaraweehEntry}>
-//         <Text style={styles.addButtonText}>Add Taraweeh Entry</Text>
-//       </TouchableOpacity>
-
-//       {/* Submit Button */}
-//       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-//         <Text style={styles.submitButtonText}>Submit</Text>
-//       </TouchableOpacity>
-
-//       {/* DateTimePicker */}
-//       {activePicker && (
-//         <DateTimePicker
-//           value={currentPickerValue}
-//           mode={activePicker.pickerType}
-//           display="default"
-//           onChange={handlePickerChange}
-//         />
-//       )}
-//     </ScrollView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flexGrow: 1,
-//     backgroundColor: "#E2F1E7",
-//     width: Dimensions.get("window").width,
-//     padding: 30,
-//     paddingTop: 50,
-//   },
-//   heading: {
-//     fontSize: 40,
-//     color: "#387478",
-//     fontWeight: "bold",
-//     marginBottom: 20,
-//     textAlign: "center",
-//   },
-//   inputGroup: {
-//     marginVertical: 10,
-//   },
-//   label: {
-//     fontSize: 20,
-//     color: "#387478",
-//     fontWeight: "bold",
-//     marginBottom: 5,
-//   },
-//   timePickerButton: {
-//     borderColor: "#387478",
-//     borderWidth: 1,
-//     borderRadius: 5,
-//     padding: 10,
-//     backgroundColor: "#fff",
-//   },
-//   timePickerText: {
-//     fontSize: 18,
-//     color: "#387478",
-//   },
-//   sectionHeading: {
-//     fontSize: 30,
-//     color: "#387478",
-//     fontWeight: "bold",
-//     marginTop: 20,
-//     marginBottom: 10,
-//     textAlign: "center",
-//   },
-//   dynamicRow: {
-//     marginVertical: 5,
-//   },
-//   addButton: {
-//     backgroundColor: "#387478",
-//     paddingVertical: 10,
-//     paddingHorizontal: 20,
-//     borderRadius: 10,
-//     marginVertical: 10,
-//     alignItems: "center",
-//   },
-//   addButtonText: {
-//     color: "#E2F1E7",
-//     fontSize: 18,
-//     fontWeight: "bold",
-//   },
-//   taraweehRow: {
-//     borderWidth: 1,
-//     borderColor: "#387478",
-//     borderRadius: 5,
-//     padding: 10,
-//     marginVertical: 5,
-//   },
-//   taraweehField: {
-//     marginVertical: 5,
-//   },
-//   input: {
-//     borderColor: "#387478",
-//     borderWidth: 1,
-//     borderRadius: 5,
-//     padding: 10,
-//     fontSize: 18,
-//     backgroundColor: "#fff",
-//   },
-//   submitButton: {
-//     backgroundColor: "#387478",
-//     paddingVertical: 15,
-//     borderRadius: 10,
-//     alignItems: "center",
-//     marginTop: 30,
-//     marginBottom: 50,
-//   },
-//   submitButtonText: {
-//     fontSize: 20,
-//     color: "#E2F1E7",
-//     fontWeight: "bold",
-//   },
-// });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState } from "react";
 import {
   ScrollView,
   View,
   Text,
   StyleSheet,
-  Dimensions,
   TouchableOpacity,
   Alert,
   TextInput,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { updateMasjidDetails } from "./apiupdatemasjiddetails";
+import { COLORS, FONTS, SIZES, SHADOWS } from "./Theme";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function UpdateTimingsPage({ route, navigation }) {
   const { masjid } = route.params;
   const currentTimings = masjid.details?.timings || {};
 
-  // Helper functions to parse and format times.
+  // Improved parseTime that handles multiple formats
   const parseTime = (timeStr) => {
     if (!timeStr) return new Date();
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes);
-    date.setSeconds(0);
-    return date;
+    if (typeof timeStr !== 'string') return new Date();
+    
+    timeStr = timeStr.trim();
+    
+    // Handle AM/PM format (e.g., "9:30 AM" or "9:30AM")
+    if (timeStr.toUpperCase().includes("AM") || timeStr.toUpperCase().includes("PM")) {
+      const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+      if (match) {
+        let hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const period = match[3].toUpperCase();
+        
+        if (period === "PM" && hours !== 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
+        
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+      }
+    }
+    
+    // Handle 24-hour format (e.g., "14:30")
+    const parts = timeStr.split(":");
+    if (parts.length >= 2) {
+      const hours = parseInt(parts[0], 10);
+      const minutes = parseInt(parts[1], 10);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+        return date;
+      }
+    }
+    
+    return new Date();
   };
 
   const formatTime = (date) => {
-    if (!date) return "";
+    if (!date || !(date instanceof Date) || isNaN(date)) return "";
     let hours = date.getHours();
     let minutes = date.getMinutes();
-    hours = hours < 10 ? "0" + hours : hours;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
     minutes = minutes < 10 ? "0" + minutes : minutes;
-    return `${hours}:${minutes}`;
+    return `${hours}:${minutes} ${ampm}`;
   };
 
-  // Standard prayer timings (pre-filled if available)
-  const [fajr, setFajr] = useState(
-    currentTimings.fajr ? parseTime(currentTimings.fajr) : new Date()
-  );
-  const [dhuhr, setDhuhr] = useState(
-    currentTimings.dhuhr ? parseTime(currentTimings.dhuhr) : new Date()
-  );
-  const [asar, setAsar] = useState(
-    currentTimings.asar ? parseTime(currentTimings.asar) : new Date()
-  );
-  const [maghrib, setMaghrib] = useState(
-    currentTimings.maghrib ? parseTime(currentTimings.maghrib) : new Date()
-  );
-  const [isha, setIsha] = useState(
-    currentTimings.isha ? parseTime(currentTimings.isha) : new Date()
-  );
+  // Initialize prayer times
+  const [fajr, setFajr] = useState(parseTime(currentTimings.fajr));
+  const [dhuhr, setDhuhr] = useState(parseTime(currentTimings.dhuhr));
+  const [asar, setAsar] = useState(parseTime(currentTimings.asar || currentTimings.asr));
+  const [maghrib, setMaghrib] = useState(parseTime(currentTimings.maghrib));
+  const [isha, setIsha] = useState(parseTime(currentTimings.isha));
 
-  // Dynamic sections for Jumma and Taraweeh
-  const [jummaTimings, setJummaTimings] = useState([]); // Array of Date objects
-  const [taraweehEntries, setTaraweehEntries] = useState([]); // Each entry: { time: Date, parah: string, startDate: Date }
+  // Initialize Jumma timings from existing data
+  const initJumma = () => {
+    const existing = currentTimings.jummatiming;
+    if (Array.isArray(existing)) {
+      return existing.map(t => parseTime(t));
+    } else if (typeof existing === 'string' && existing) {
+      return [parseTime(existing)];
+    }
+    return [];
+  };
+  
+  const [jummaTimings, setJummaTimings] = useState(initJumma());
+  
+  // Initialize Taraweeh entries from existing data
+  const initTaraweeh = () => {
+    const existing = currentTimings.taravi || currentTimings.taraweeh;
+    if (Array.isArray(existing)) {
+      return existing.map(entry => ({
+        time: parseTime(entry.time),
+        parah: entry.parah || "",
+        startDate: entry.startDate ? new Date(entry.startDate) : new Date(),
+      }));
+    }
+    return [];
+  };
+  
+  const [taraweehEntries, setTaraweehEntries] = useState(initTaraweeh());
 
-  /* 
-    activePicker object holds info about which picker is active.
-    Structure:
-      { 
-        type: "prayer" | "jumma" | "taraweeh",
-        field: (for prayer: "fajr"/"dhuhr"/"asar"/"maghrib"/"isha"; for taraweeh: "time" or "startDate"),
-        index: (for jumma or taraweeh entries),
-        pickerType: "time" or "date"
-      }
-  */
   const [activePicker, setActivePicker] = useState(null);
 
-  // Determine the current value for the picker.
-  let currentPickerValue = new Date();
-  if (activePicker) {
-    if (activePicker.type === "prayer") {
-      if (activePicker.field === "fajr") currentPickerValue = fajr;
-      else if (activePicker.field === "dhuhr") currentPickerValue = dhuhr;
-      else if (activePicker.field === "asar") currentPickerValue = asar;
-      else if (activePicker.field === "maghrib") currentPickerValue = maghrib;
-      else if (activePicker.field === "isha") currentPickerValue = isha;
-    } else if (activePicker.type === "jumma") {
-      currentPickerValue = jummaTimings[activePicker.index] || new Date();
-    } else if (activePicker.type === "taraweeh") {
-      if (activePicker.field === "time") {
-        currentPickerValue = taraweehEntries[activePicker.index].time;
-      } else if (activePicker.field === "startDate") {
-        currentPickerValue = taraweehEntries[activePicker.index].startDate;
-      }
-    }
-  }
-
-  const handlePickerChange = (event, selectedDate) => {
-    if (selectedDate) {
+  const handlePickerConfirm = (selectedDate) => {
+    if (selectedDate && activePicker) {
       if (activePicker.type === "prayer") {
         if (activePicker.field === "fajr") setFajr(selectedDate);
         else if (activePicker.field === "dhuhr") setDhuhr(selectedDate);
@@ -612,9 +129,12 @@ export default function UpdateTimingsPage({ route, navigation }) {
     setActivePicker(null);
   };
 
-  // Functions to add new entries
   const addJummaTiming = () => {
     setJummaTimings([...jummaTimings, new Date()]);
+  };
+  
+  const removeJummaTiming = (index) => {
+    setJummaTimings(jummaTimings.filter((_, i) => i !== index));
   };
 
   const addTaraweehEntry = () => {
@@ -623,6 +143,10 @@ export default function UpdateTimingsPage({ route, navigation }) {
       { time: new Date(), parah: "", startDate: new Date() },
     ]);
   };
+  
+  const removeTaraweehEntry = (index) => {
+    setTaraweehEntries(taraweehEntries.filter((_, i) => i !== index));
+  };
 
   const handleTaraweehParahChange = (index, value) => {
     const updated = [...taraweehEntries];
@@ -630,304 +154,370 @@ export default function UpdateTimingsPage({ route, navigation }) {
     setTaraweehEntries(updated);
   };
 
-  // On submit, consolidate data and log it.
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const data = {
-      prayerTimings: {
+      timings: {
         fajr: formatTime(fajr),
         dhuhr: formatTime(dhuhr),
         asar: formatTime(asar),
         maghrib: formatTime(maghrib),
         isha: formatTime(isha),
+        jummatiming: jummaTimings.map((time) => formatTime(time)),
+        taravi: taraweehEntries.map((entry) => ({
+          time: formatTime(entry.time),
+          parah: entry.parah,
+          startDate: entry.startDate.toDateString(),
+        })),
       },
-      jummaTimings: jummaTimings.map((time) => formatTime(time)),
-      taraweehEntries: taraweehEntries.map((entry) => ({
-        time: formatTime(entry.time),
-        parah: entry.parah,
-        startDate: entry.startDate.toDateString(),
-      })),
     };
 
-    console.log("Updated Timings Data:", data);
-    Alert.alert("Thank you!", "Your prayer timings have been updated.", [
-      {
-        text: "OK",
-        onPress: () => navigation.goBack(),
-      },
-    ]);
+    try {
+        await updateMasjidDetails(masjid.id || masjid.mosqueId, data);
+        
+        // Update the masjid object with new timings for proper refresh
+        const updatedMasjid = {
+          ...masjid,
+          details: {
+            ...masjid.details,
+            timings: data.timings,
+          }
+        };
+        
+        Alert.alert("Success", "Prayer timings updated successfully.", [
+        {
+            text: "OK",
+            onPress: () => navigation.navigate("About Page", { masjid: updatedMasjid }),
+        },
+        ]);
+    } catch (e) {
+        Alert.alert("Error", "Failed to update timings.");
+    }
+  };
+
+  const renderPrayerInput = (label, time, field) => (
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>{label}</Text>
+        <TouchableOpacity
+          style={styles.timePickerButton}
+          onPress={() =>
+            setActivePicker({
+              type: "prayer",
+              field: field,
+              pickerType: "time",
+            })
+          }
+        >
+          <Text style={styles.timePickerText}>{formatTime(time)}</Text>
+          <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+      </View>
+  );
+
+  const getPickerValue = () => {
+    if (!activePicker) return new Date();
+    
+    if (activePicker.type === "prayer") {
+      if (activePicker.field === "fajr") return fajr;
+      if (activePicker.field === "dhuhr") return dhuhr;
+      if (activePicker.field === "asar") return asar;
+      if (activePicker.field === "maghrib") return maghrib;
+      if (activePicker.field === "isha") return isha;
+    } else if (activePicker.type === "jumma") {
+      return jummaTimings[activePicker.index] || new Date();
+    } else if (activePicker.type === "taraweeh") {
+      const entry = taraweehEntries[activePicker.index];
+      if (activePicker.field === "time") return entry?.time || new Date();
+      if (activePicker.field === "startDate") return entry?.startDate || new Date();
+    }
+    return new Date();
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Prayer Timings</Text>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
+        <Text style={styles.backButtonText}>Back to Details</Text>
+      </TouchableOpacity>
+      
+      <Text style={styles.heading}>Update Prayer Timings</Text>
 
-      {/* Standard Prayer Timings */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Fajr:</Text>
-        <TouchableOpacity
-          style={styles.timePickerButton}
-          onPress={() =>
-            setActivePicker({
-              type: "prayer",
-              field: "fajr",
-              pickerType: "time",
-            })
-          }
-        >
-          <Text style={styles.timePickerText}>{formatTime(fajr)}</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Dhuhr:</Text>
-        <TouchableOpacity
-          style={styles.timePickerButton}
-          onPress={() =>
-            setActivePicker({
-              type: "prayer",
-              field: "dhuhr",
-              pickerType: "time",
-            })
-          }
-        >
-          <Text style={styles.timePickerText}>{formatTime(dhuhr)}</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Asr:</Text>
-        <TouchableOpacity
-          style={styles.timePickerButton}
-          onPress={() =>
-            setActivePicker({
-              type: "prayer",
-              field: "asar",
-              pickerType: "time",
-            })
-          }
-        >
-          <Text style={styles.timePickerText}>{formatTime(asar)}</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Maghrib:</Text>
-        <TouchableOpacity
-          style={styles.timePickerButton}
-          onPress={() =>
-            setActivePicker({
-              type: "prayer",
-              field: "maghrib",
-              pickerType: "time",
-            })
-          }
-        >
-          <Text style={styles.timePickerText}>{formatTime(maghrib)}</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Isha:</Text>
-        <TouchableOpacity
-          style={styles.timePickerButton}
-          onPress={() =>
-            setActivePicker({
-              type: "prayer",
-              field: "isha",
-              pickerType: "time",
-            })
-          }
-        >
-          <Text style={styles.timePickerText}>{formatTime(isha)}</Text>
-        </TouchableOpacity>
+      <View style={styles.card}>
+        <Text style={styles.sectionHeading}>Daily Prayers</Text>
+        {renderPrayerInput("Fajr", fajr, "fajr")}
+        {renderPrayerInput("Dhuhr", dhuhr, "dhuhr")}
+        {renderPrayerInput("Asr", asar, "asar")}
+        {renderPrayerInput("Maghrib", maghrib, "maghrib")}
+        {renderPrayerInput("Isha", isha, "isha")}
       </View>
 
-      {/* Jumma Timings Section */}
-      <Text style={styles.sectionHeading}>Jumma Timings</Text>
-      {jummaTimings.map((time, index) => (
-        <View key={index} style={styles.dynamicRow}>
-          <TouchableOpacity
-            style={styles.timePickerButton}
-            onPress={() =>
-              setActivePicker({ type: "jumma", index, pickerType: "time" })
-            }
-          >
-            <Text style={styles.timePickerText}>{formatTime(time)}</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
-      <View style={styles.btnCenter}>
+      <View style={styles.card}>
+        <Text style={styles.sectionHeading}>Jumma Timings</Text>
+        {jummaTimings.length === 0 && (
+          <Text style={styles.emptyText}>No Jumma timings added yet</Text>
+        )}
+        {jummaTimings.map((time, index) => (
+            <View key={index} style={styles.dynamicRow}>
+              <TouchableOpacity
+                  style={styles.timePickerButtonFlex}
+                  onPress={() =>
+                    setActivePicker({ type: "jumma", index, pickerType: "time" })
+                  }
+              >
+                  <Text style={styles.timePickerText}>{formatTime(time)}</Text>
+                  <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.removeButton} 
+                onPress={() => removeJummaTiming(index)}
+              >
+                <Ionicons name="trash-outline" size={20} color={COLORS.error} />
+              </TouchableOpacity>
+            </View>
+        ))}
         <TouchableOpacity style={styles.addButton} onPress={addJummaTiming}>
-          <Text style={styles.addButtonText}>Add Jumma Timing</Text>
+            <Ionicons name="add-circle-outline" size={24} color={COLORS.white} />
+            <Text style={styles.addButtonText}>Add Jumma Timing</Text>
         </TouchableOpacity>
       </View>
-      {/* Taraweeh Section */}
-      <Text style={styles.sectionHeading}>Taraweeh</Text>
-      {taraweehEntries.map((entry, index) => (
-        <View key={index} style={styles.taraweehRow}>
-          <View style={styles.taraweehField}>
-            <Text style={styles.label}>Timing:</Text>
-            <TouchableOpacity
-              style={styles.timePickerButton}
-              onPress={() =>
-                setActivePicker({
-                  type: "taraweeh",
-                  index,
-                  field: "time",
-                  pickerType: "time",
-                })
-              }
-            >
-              <Text style={styles.timePickerText}>
-                {formatTime(entry.time)}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.taraweehField}>
-            <Text style={styles.label}>Parah:</Text>
-            <TextInput
-              style={styles.input}
-              value={entry.parah}
-              onChangeText={(value) => handleTaraweehParahChange(index, value)}
-              placeholder="Enter number of parah"
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={styles.taraweehField}>
-            <Text style={styles.label}>Start Date:</Text>
-            <TouchableOpacity
-              style={styles.timePickerButton}
-              onPress={() =>
-                setActivePicker({
-                  type: "taraweeh",
-                  index,
-                  field: "startDate",
-                  pickerType: "date",
-                })
-              }
-            >
-              <Text style={styles.timePickerText}>
-                {entry.startDate.toDateString()}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-      <View style={styles.btnCenter}>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionHeading}>Taraweeh</Text>
+        {taraweehEntries.length === 0 && (
+          <Text style={styles.emptyText}>No Taraweeh entries added yet</Text>
+        )}
+        {taraweehEntries.map((entry, index) => (
+            <View key={index} style={styles.taraweehRow}>
+              <View style={styles.taraweehHeader}>
+                <Text style={styles.taraweehTitle}>Taraweeh #{index + 1}</Text>
+                <TouchableOpacity onPress={() => removeTaraweehEntry(index)}>
+                  <Ionicons name="close-circle" size={24} color={COLORS.error} />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.taraweehField}>
+                  <Text style={styles.label}>Time</Text>
+                  <TouchableOpacity
+                    style={styles.timePickerButtonFlex}
+                    onPress={() =>
+                        setActivePicker({
+                        type: "taraweeh",
+                        index,
+                        field: "time",
+                        pickerType: "time",
+                        })
+                    }
+                  >
+                    <Text style={styles.timePickerText}>{formatTime(entry.time)}</Text>
+                    <Ionicons name="time-outline" size={18} color={COLORS.primary} />
+                  </TouchableOpacity>
+              </View>
+              
+              <View style={styles.taraweehField}>
+                  <Text style={styles.label}>Parah</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={entry.parah}
+                    onChangeText={(value) => handleTaraweehParahChange(index, value)}
+                    placeholder="e.g., 1-2"
+                    placeholderTextColor={COLORS.textLight}
+                  />
+              </View>
+              
+              <View style={styles.taraweehField}>
+                  <Text style={styles.label}>Date</Text>
+                  <TouchableOpacity
+                    style={styles.timePickerButtonFlex}
+                    onPress={() =>
+                        setActivePicker({
+                        type: "taraweeh",
+                        index,
+                        field: "startDate",
+                        pickerType: "date",
+                        })
+                    }
+                  >
+                    <Text style={styles.timePickerText}>
+                        {entry.startDate.toDateString()}
+                    </Text>
+                    <Ionicons name="calendar-outline" size={18} color={COLORS.primary} />
+                  </TouchableOpacity>
+              </View>
+            </View>
+        ))}
         <TouchableOpacity style={styles.addButton} onPress={addTaraweehEntry}>
-          <Text style={styles.addButtonText}>Add Taraweeh Entry</Text>
+             <Ionicons name="add-circle-outline" size={24} color={COLORS.white} />
+            <Text style={styles.addButtonText}>Add Taraweeh Entry</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Submit Button */}
-      <View style={styles.btnCenter}>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+        <Text style={styles.submitButtonText}>Update All Timings</Text>
+      </TouchableOpacity>
 
-      {/* DateTimePicker */}
-      {activePicker && (
-        <DateTimePicker
-          value={currentPickerValue}
-          mode={activePicker.pickerType}
-          display="default"
-          onChange={handlePickerChange}
-        />
-      )}
+      <DateTimePickerModal
+        isVisible={activePicker !== null}
+        mode={activePicker?.pickerType || "time"}
+        date={getPickerValue()}
+        onConfirm={handlePickerConfirm}
+        onCancel={() => setActivePicker(null)}
+      />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    backgroundColor: "#E2F1E7",
-    width: Dimensions.get("window").width,
-    padding: 30,
-    paddingTop: 50,
+    padding: SIZES.padding,
+    backgroundColor: COLORS.background,
+    paddingBottom: 50,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  backButtonText: {
+    ...FONTS.h3,
+    color: COLORS.primary,
+    marginLeft: 8,
   },
   heading: {
-    fontSize: 40,
-    color: "#387478",
-    fontWeight: "bold",
-    margin: 10,
+    ...FONTS.h2,
+    color: COLORS.primary,
+    marginBottom: 20,
     textAlign: "center",
   },
-  inputGroup: {
-    marginVertical: 10,
-  },
-  label: {
-    fontSize: 20,
-    color: "#387478",
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  timePickerButton: {
-    borderColor: "#387478",
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: "#E2F1E7",
-  },
-  timePickerText: {
-    fontSize: 18,
-    color: "#387478",
+  card: {
+      backgroundColor: COLORS.surface,
+      borderRadius: SIZES.radius,
+      padding: SIZES.padding,
+      marginBottom: 20,
+      ...SHADOWS.light,
   },
   sectionHeading: {
-    fontSize: 30,
-    color: "#387478",
-    fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 5,
-    textAlign: "center",
+    ...FONTS.h3,
+    color: COLORS.primary,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 5,
+  },
+  emptyText: {
+    ...FONTS.body3,
+    color: COLORS.textSecondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  inputGroup: {
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  label: {
+    ...FONTS.body3,
+    color: COLORS.textPrimary,
+    marginRight: 10,
+    width: 70, 
+  },
+  timePickerButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: SIZES.radius,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  timePickerButtonFlex: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: SIZES.radius,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  timePickerText: {
+    ...FONTS.body3,
+    color: COLORS.textPrimary,
   },
   dynamicRow: {
     marginVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  removeButton: {
+    padding: 10,
+    marginLeft: 10,
   },
   addButton: {
-    backgroundColor: "#387478",
-    height: 50,
-    width: 220,
-    borderRadius: 10,
-    justifyContent: "center",
+    backgroundColor: COLORS.secondary,
+    paddingVertical: 12,
+    borderRadius: SIZES.radius,
     alignItems: "center",
-    margin: 10,
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   addButtonText: {
-    color: "#E2F1E7",
-    fontSize: 20,
-    fontWeight: "bold",
+    ...FONTS.h3,
+    color: COLORS.white,
+    marginLeft: 10,
   },
   taraweehRow: {
     borderWidth: 1,
-    borderColor: "#387478",
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 10,
+    borderColor: COLORS.primary,
+    borderRadius: SIZES.radius,
+    padding: 12,
+    marginBottom: 12,
+    backgroundColor: COLORS.background,
+  },
+  taraweehHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  taraweehTitle: {
+    ...FONTS.h3,
+    color: COLORS.accent,
   },
   taraweehField: {
-    marginVertical: 5,
+    marginVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   input: {
-    borderColor: "#387478",
+    flex: 1,
+    borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    fontSize: 18,
-    backgroundColor: "#E2F1E7",
+    borderRadius: SIZES.radius,
+    padding: 12,
+    ...FONTS.body3,
+    color: COLORS.textPrimary,
+    backgroundColor: COLORS.surface,
   },
   submitButton: {
-    backgroundColor: "#387478",
-    height: 50,
-    width: 140,
-    borderRadius: 10,
-    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    paddingVertical: 15,
+    borderRadius: SIZES.radius,
     alignItems: "center",
-    margin: 10,
+    marginTop: 10,
+    marginBottom: 30,
+    ...SHADOWS.medium,
   },
   submitButtonText: {
-    fontSize: 20,
-    color: "#E2F1E7",
+    ...FONTS.h2,
+    color: COLORS.white,
     fontWeight: "bold",
-  },
-  btnCenter: {
-    alignItems: "center",
   },
 });

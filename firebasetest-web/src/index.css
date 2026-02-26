@@ -1,0 +1,610 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #F3F4F6;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* Leaflet required styles */
+.leaflet-container { width: 100%; height: 100%; }
+
+/* Layout */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.page-content {
+  flex: 1;
+  padding-bottom: 80px; /* space for bottom nav */
+  overflow-y: auto;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #fff;
+  border-radius: 16px;
+  height: 65px;
+  box-shadow: 0 8px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #6B7280;
+  transition: color 0.2s;
+}
+
+.bottom-nav a:hover,
+.bottom-nav a.active {
+  color: #10B981;
+}
+
+.bottom-nav a svg {
+  font-size: 22px;
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #10B981;
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: opacity 0.2s, transform 0.1s;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #F3F4F6;
+  color: #10B981;
+  border: 1px solid #10B981;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: #e0f2e9; }
+
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: #EF4444;
+  border: 1px solid #EF4444;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Form Inputs */
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #111827;
+  background: #F3F4F6;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: #10B981; }
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.form-select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #111827;
+  background: #F3F4F6;
+  outline: none;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+.badge-primary { background: #10B981; }
+.badge-accent { background: #F59E0B; }
+
+/* Map container */
+.map-container {
+  width: 100%;
+  height: 250px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+  margin-bottom: 15px;
+  position: relative;
+}
+.map-container .leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+.map-instruction {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 0;
+  z-index: 2;
+}
+
+/* Horizontal scroll list */
+.horizontal-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px 0;
+  scrollbar-width: thin;
+}
+.horizontal-scroll::-webkit-scrollbar { height: 4px; }
+.horizontal-scroll::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 4px; }
+
+/* Section headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: #111827;
+}
+.see-all {
+  font-size: 14px;
+  font-weight: 600;
+  color: #10B981;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* Loading spinner */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E5E7EB;
+  border-top-color: #10B981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Info boxes */
+.info-box {
+  background: #F3F4F6;
+  padding: 10px;
+  border-radius: 16px;
+  margin-bottom: 10px;
+  border-left: 3px solid #10B981;
+}
+.info-box strong {
+  font-size: 12px;
+  color: #6B7280;
+}
+.info-box p {
+  font-size: 12px;
+  color: #111827;
+  margin: 2px 0 0;
+}
+
+/* Search bar */
+.search-bar-wrapper {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 15px;
+}
+.search-input-row {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 0 14px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+  border: 1px solid #E5E7EB;
+}
+.search-input-row input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 12px 0;
+  font-size: 14px;
+  background: transparent;
+  color: #111827;
+}
+.search-input-row svg { color: #9CA3AF; flex-shrink: 0; }
+.search-results-list {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 10px rgba(0,0,0,0.2);
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 10px;
+  border: 1px solid #E5E7EB;
+  z-index: 999;
+}
+.search-result-item {
+  padding: 10px;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 13px;
+  cursor: pointer;
+  color: #111827;
+  transition: background 0.15s;
+}
+.search-result-item:hover { background: #F3F4F6; }
+.search-result-item:last-child { border-bottom: none; }
+
+/* Header area */
+.page-header {
+  padding: 50px 20px 20px;
+  background: #fff;
+  border-radius: 0 0 30px 30px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 100;
+}
+.page-header h1 {
+  font-size: 26px;
+  font-weight: bold;
+  color: #10B981;
+  margin-bottom: 4px;
+}
+.page-header p {
+  font-size: 12px;
+  color: #6B7280;
+  margin-bottom: 15px;
+}
+.header-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Masjid Card */
+.masjid-card {
+  background: #fff;
+  min-width: 260px;
+  padding: 14px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+.masjid-card:hover { transform: scale(0.98); opacity: 0.95; }
+.masjid-card.full-width {
+  min-width: unset;
+  width: 100%;
+  margin-bottom: 15px;
+}
+.masjid-card-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.masjid-card-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+.masjid-card-text {
+  flex: 1;
+  min-width: 0;
+}
+.masjid-card-text h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.masjid-card-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Step indicators */
+.step-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #10B981;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.step-subtitle {
+  font-size: 12px;
+  color: #6B7280;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Button rows */
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 12px;
+}
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: #6B7280;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px 16px;
+}
+
+/* Time row */
+.time-row {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #E5E7EB;
+}
+.time-row label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  display: block;
+  margin-bottom: 5px;
+}
+.time-input {
+  background: #F3F4F6;
+  border-radius: 16px;
+  padding: 12px;
+  border: none;
+  font-size: 14px;
+  color: #111827;
+  width: 100%;
+  outline: none;
+}
+
+/* Centered empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+}
+.empty-state p {
+  font-size: 14px;
+  color: #6B7280;
+  font-style: italic;
+}
+
+/* Welcome Page */
+.welcome-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+  gap: 40px;
+}
+.welcome-page h1 {
+  font-size: 50px;
+  font-weight: bold;
+  color: #10B981;
+}
+.welcome-page p {
+  font-size: 18px;
+  color: #6B7280;
+}
+
+/* Account page centered */
+.centered-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  gap: 20px;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: #E5E7EB;
+  margin: 10px 0;
+}
+
+/* Events section inline */
+.events-section {
+  margin-top: 12px;
+}
+.events-section .divider { margin-bottom: 8px; }
+.events-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: #6B7280;
+  margin-bottom: 4px;
+}
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 10px;
+  color: #111827;
+}
+
+/* About Masjid Page */
+.about-page-content {
+  padding: 20px;
+}
+.about-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.about-header h1 {
+  font-size: 26px;
+  font-weight: bold;
+  color: #10B981;
+}
+.about-header p {
+  font-size: 14px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+.timings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.timing-item {
+  background: #F3F4F6;
+  padding: 12px;
+  border-radius: 16px;
+  text-align: center;
+}
+.timing-item .prayer-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: capitalize;
+}
+.timing-item .prayer-time {
+  font-size: 18px;
+  font-weight: bold;
+  color: #10B981;
+  margin-top: 4px;
+}
+
+/* Place details / nearby list */
+.nearby-list-item {
+  padding: 12px;
+  border-bottom: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.nearby-list-item:hover { background: #F9FAFB; }
+.nearby-list-item h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+.nearby-list-item p {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+/* Filter button */
+.filter-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: #10B981;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 20px;
+  box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+}
+
+/* Scrollable page padding */
+.page-padding {
+  padding: 0 20px;
+}

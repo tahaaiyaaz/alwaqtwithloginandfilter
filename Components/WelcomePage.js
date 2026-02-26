@@ -1,18 +1,23 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from "react-native";
+import { COLORS, FONTS, SIZES, SHADOWS } from "./Theme";
 
 export default function WelcomePage({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Al Waqt</Text>
-      <Text style={styles.subText}>Your Own Islamic Community App</Text>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
+      
+      <View style={styles.contentContainer}>
+        <Text style={styles.heading}>Al Waqt</Text>
+        <Text style={styles.subText}>Your Own Islamic Community App</Text>
+      </View>
+
       <TouchableOpacity
         style={styles.btn}
         onPress={() => navigation.navigate("MainTabs")}
+        activeOpacity={0.8}
       >
-        <Text style={{ fontSize: 20, color: "#E2F1E7", fontWeight: "bold" }}>
-          Let's Start
-        </Text>
+        <Text style={styles.btnText}>Let's Start</Text>
       </TouchableOpacity>
     </View>
   );
@@ -21,27 +26,40 @@ export default function WelcomePage({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#E2F1E7",
+    backgroundColor: COLORS.background,
+    paddingVertical: 60,
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   heading: {
+    ...FONTS.largeTitle,
     fontSize: 50,
-    color: "#387478",
-    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 10,
   },
   subText: {
-    fontSize: 20,
-    color: "#387478",
-    fontWeight: "bold",
+    ...FONTS.h3,
+    color: COLORS.textSecondary,
+    textAlign: "center",
+    maxWidth: '80%',
   },
   btn: {
-    backgroundColor: "#387478",
-    height: 50,
-    width: 140,
-    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    height: 55,
+    width: 200,
+    borderRadius: 30,
     justifyContent: "center",
     alignItems: "center",
-    margin: 40,
+    ...SHADOWS.medium,
   },
+  btnText: {
+    ...FONTS.h3,
+    color: COLORS.white,
+    fontWeight: "bold",
+  }
 });

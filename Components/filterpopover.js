@@ -8,65 +8,45 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { COLORS, FONTS, SIZES, SHADOWS } from "./Theme";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function FilterPopover({ visible, onClose, onApply }) {
-  // Time filter state (store Date objects)
-  const [timeFilter, setTimeFilter] = useState("before"); // "before", "after", "between"
+  const [timeFilter, setTimeFilter] = useState("before"); 
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [selectedStartTime, setSelectedStartTime] = useState(new Date());
   const [selectedEndTime, setSelectedEndTime] = useState(new Date());
-  const [showTimePicker, setShowTimePicker] = useState(false);
-  const [pickerMode, setPickerMode] = useState("single"); // "single", "start", or "end"
+  
+  const [showSinglePicker, setShowSinglePicker] = useState(false);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
-  // Distance & dropdown state
   const [distance, setDistance] = useState("3");
   const [dropdownValue, setDropdownValue] = useState("");
 
-  // Dropdown options (6 options)
   const dropdownOptions = [
-    { label: "fajr", value: "fajr" },
-    { label: "dhuhr", value: "dhuhr" },
-    { label: "asar", value: "asar" },
-    { label: "isha", value: "isha" },
-    { label: "jummatiming", value: "jummatiming" },
-    { label: "Option 6", value: "option6" },
+    { label: "Fajr", value: "fajr" },
+    { label: "Dhuhr", value: "dhuhr" },
+    { label: "Asar", value: "asar" },
+    { label: "Isha", value: "isha" },
+    { label: "Jummah", value: "jummatiming" },
   ];
 
-  // Helper function to format Date into HH:MM string
   const formatTime = (date) => {
-    if (!date) return "";
-    const hours = date.getHours();
+    if (!date) return "00:00";
+    let hours = date.getHours();
     let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
     minutes = minutes < 10 ? "0" + minutes : minutes;
-    return hours + ":" + minutes;
+    return `${hours}:${minutes} ${ampm}`;
   };
 
-  const openTimePicker = (mode) => {
-    setPickerMode(mode);
-    setShowTimePicker(true);
-  };
-
-  const onTimeChange = (event, selectedDate) => {
-    if (event.type === "dismissed") {
-      setShowTimePicker(false);
-      return;
-    }
-    setShowTimePicker(false);
-    // Use event.nativeEvent.timestamp if selectedDate is not provided
-    const dateValue = selectedDate ? selectedDate : new Date(event.nativeEvent.timestamp);
-    if (pickerMode === "single") {
-      setSelectedTime(dateValue);
-    } else if (pickerMode === "start") {
-      setSelectedStartTime(dateValue);
-    } else if (pickerMode === "end") {
-      setSelectedEndTime(dateValue);
-    }
-  };
-
-  // New function: clear all fields except distance (which is set to "3")
   const handleClear = () => {
     setTimeFilter("before");
     setSelectedTime(new Date());
@@ -77,14 +57,12 @@ export default function FilterPopover({ visible, onClose, onApply }) {
   };
 
   const handleApply = () => {
-    // Validate distance: must be numeric and ≤ 30
     const distNum = parseFloat(distance);
     if (isNaN(distNum) || distNum > 30) {
       alert("Please enter a valid distance (max 30 km).");
       return;
     }
 
-    // Build filter object; format the time(s) using formatTime()
     const filter = {
       timeFilter,
       time:
@@ -102,143 +80,156 @@ export default function FilterPopover({ visible, onClose, onApply }) {
   return (
     <Modal
       visible={visible}
-      animationType="fade"
+      animationType="slide"
       transparent
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
         <View style={styles.popover}>
-          {/* Close Button */}
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
-
-          {/* Dropdown: Select prayer */}
-          <Text style={styles.label}>Select Option:</Text>
-          <Picker
-            selectedValue={dropdownValue}
-            onValueChange={(itemValue, itemIndex) => setDropdownValue(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select an option" value={null} />
-            {dropdownOptions.map((option) => (
-              <Picker.Item key={option.value} label={option.label} value={option.value} />
-            ))}
-          </Picker>
-
-          {/* Only enable time filter if a prayer option is selected */}
-          {dropdownValue ? (
-            <>
-              <Text style={styles.label}>Time Filter:</Text>
-              <View style={styles.radioGroup}>
-                <TouchableOpacity
-                  style={styles.radioButton}
-                  onPress={() => setTimeFilter("before")}
-                >
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      timeFilter === "before" && styles.selectedRadio,
-                    ]}
-                  />
-                  <Text style={styles.radioLabel}>Before this time</Text>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.header}>
+                <Text style={styles.heading}>Filter Options</Text>
+                <TouchableOpacity onPress={onClose}>
+                  <Ionicons name="close" size={24} color={COLORS.textSecondary} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.radioButton}
-                  onPress={() => setTimeFilter("after")}
-                >
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      timeFilter === "after" && styles.selectedRadio,
-                    ]}
-                  />
-                  <Text style={styles.radioLabel}>After this time</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.radioButton}
-                  onPress={() => setTimeFilter("between")}
-                >
-                  <View
-                    style={[
-                      styles.radioCircle,
-                      timeFilter === "between" && styles.selectedRadio,
-                    ]}
-                  />
-                  <Text style={styles.radioLabel}>Between these times</Text>
-                </TouchableOpacity>
-              </View>
+            </View>
 
-              {timeFilter === "between" ? (
-                <View style={styles.betweenContainer}>
+            <Text style={styles.label}>Select Prayer:</Text>
+            <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={dropdownValue}
+                  onValueChange={(itemValue) => setDropdownValue(itemValue)}
+                  style={styles.picker}
+                  dropdownIconColor={COLORS.primary}
+                >
+                  <Picker.Item label="Select an option" value="" color={COLORS.textSecondary} />
+                  {dropdownOptions.map((option) => (
+                    <Picker.Item key={option.value} label={option.label} value={option.value} color={COLORS.textPrimary} />
+                  ))}
+                </Picker>
+            </View>
+
+            {dropdownValue ? (
+              <>
+                <Text style={styles.label}>Time Filter:</Text>
+                <View style={styles.radioGroup}>
                   <TouchableOpacity
-                    style={styles.timeButton}
-                    onPress={() => openTimePicker("start")}
+                    style={styles.radioButton}
+                    onPress={() => setTimeFilter("before")}
                   >
-                    <Text style={styles.timeButtonText}>
-                      Start: {formatTime(selectedStartTime)}
-                    </Text>
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        timeFilter === "before" && styles.selectedRadio,
+                      ]}
+                    />
+                    <Text style={styles.radioLabel}>Before</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.timeButton}
-                    onPress={() => openTimePicker("end")}
+                    style={styles.radioButton}
+                    onPress={() => setTimeFilter("after")}
                   >
-                    <Text style={styles.timeButtonText}>
-                      End: {formatTime(selectedEndTime)}
-                    </Text>
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        timeFilter === "after" && styles.selectedRadio,
+                      ]}
+                    />
+                    <Text style={styles.radioLabel}>After</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.radioButton}
+                    onPress={() => setTimeFilter("between")}
+                  >
+                    <View
+                      style={[
+                        styles.radioCircle,
+                        timeFilter === "between" && styles.selectedRadio,
+                      ]}
+                    />
+                    <Text style={styles.radioLabel}>Between</Text>
                   </TouchableOpacity>
                 </View>
-              ) : (
-                <TouchableOpacity
-                  style={styles.timeButton}
-                  onPress={() => openTimePicker("single")}
-                >
-                  <Text style={styles.timeButtonText}>
-                    {timeFilter === "before" ? "Before" : "After"}: {formatTime(selectedTime)}
-                  </Text>
-                </TouchableOpacity>
-              )}
 
-              {showTimePicker && (
-                <DateTimePicker
-                  value={
-                    pickerMode === "single"
-                      ? selectedTime
-                      : pickerMode === "start"
-                      ? selectedStartTime
-                      : selectedEndTime
-                  }
+                {timeFilter === "between" ? (
+                  <View style={styles.betweenContainer}>
+                    <TouchableOpacity
+                      style={styles.timeInputButton}
+                      onPress={() => setShowStartPicker(true)}
+                    >
+                      <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                      <Text style={styles.timeInputText}>
+                        Start: {formatTime(selectedStartTime)}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.timeInputButton}
+                      onPress={() => setShowEndPicker(true)}
+                    >
+                      <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                      <Text style={styles.timeInputText}>
+                        End: {formatTime(selectedEndTime)}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.timeInputButton}
+                    onPress={() => setShowSinglePicker(true)}
+                  >
+                    <Ionicons name="time-outline" size={20} color={COLORS.primary} />
+                    <Text style={styles.timeInputText}>
+                      {timeFilter === "before" ? "Before" : "After"}: {formatTime(selectedTime)}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* DateTimePickerModals - always visible for proper modal approach */}
+                <DateTimePickerModal
+                  isVisible={showSinglePicker}
                   mode="time"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={onTimeChange}
+                  onConfirm={(date) => { setSelectedTime(date); setShowSinglePicker(false); }}
+                  onCancel={() => setShowSinglePicker(false)}
                 />
-              )}
-            </>
-          ) : (
-            <Text style={styles.disabledText}>
-              Select prayer time to enable time filtering
-            </Text>
-          )}
+                <DateTimePickerModal
+                  isVisible={showStartPicker}
+                  mode="time"
+                  onConfirm={(date) => { setSelectedStartTime(date); setShowStartPicker(false); }}
+                  onCancel={() => setShowStartPicker(false)}
+                />
+                <DateTimePickerModal
+                  isVisible={showEndPicker}
+                  mode="time"
+                  onConfirm={(date) => { setSelectedEndTime(date); setShowEndPicker(false); }}
+                  onCancel={() => setShowEndPicker(false)}
+                />
+              </>
+            ) : (
+              <Text style={styles.disabledText}>
+                Select a prayer to enable time filtering
+              </Text>
+            )}
 
-          {/* Distance Input */}
-          <Text style={styles.label}>Distance (km):</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter distance (max 30)"
-            keyboardType="numeric"
-            value={distance}
-            onChangeText={setDistance}
-          />
+            <Text style={styles.label}>Distance (km):</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Max 30"
+              placeholderTextColor={COLORS.textLight}
+              keyboardType="numeric"
+              value={distance}
+              onChangeText={setDistance}
+            />
 
-          {/* Clear Filter Button */}
-          <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
-            <Text style={styles.clearButtonText}>Clear Filter</Text>
-          </TouchableOpacity>
+            <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+                  <Text style={styles.clearButtonText}>Clear</Text>
+                </TouchableOpacity>
 
-          {/* Apply Filter Button */}
-          <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
-            <Text style={styles.applyButtonText}>Apply Filter</Text>
-          </TouchableOpacity>
+                <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+                  <Text style={styles.applyButtonText}>Apply</Text>
+                </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -249,126 +240,144 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "flex-end",
   },
   popover: {
-    width: "80%",
-    backgroundColor: "#fff",
+    width: "100%",
+    maxHeight: "80%",
+    backgroundColor: COLORS.surface,
     padding: 20,
-    borderRadius: 10,
-    elevation: 5,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    ...SHADOWS.medium,
   },
-  closeButton: {
-    alignSelf: "flex-end",
-    padding: 5,
+  header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 15,
   },
-  closeButtonText: {
-    fontSize: 16,
-    color: "#387478",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: "#387478",
-    textAlign: "center",
+  heading: {
+      ...FONTS.h2,
+      color: COLORS.primary,
   },
   label: {
-    fontSize: 16,
-    marginVertical: 8,
-    color: "#387478",
+    ...FONTS.h3,
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+    marginTop: 15,
+  },
+  pickerContainer: {
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      borderRadius: SIZES.radius,
+      backgroundColor: COLORS.background,
+  },
+  picker: {
+    height: 55,
+    width: "100%",
   },
   radioGroup: {
-    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+    backgroundColor: COLORS.background,
+    padding: 10,
+    borderRadius: SIZES.radius,
   },
   radioButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 5,
   },
   radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
+    height: 22,
+    width: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: "#387478",
+    borderColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
+    marginRight: 6,
   },
   selectedRadio: {
-    backgroundColor: "#387478",
+    backgroundColor: COLORS.primary,
   },
   radioLabel: {
-    fontSize: 16,
-    color: "#387478",
+    ...FONTS.body3,
+    color: COLORS.textPrimary,
   },
   betweenContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  timeButton: {
-    backgroundColor: "#f0f0f0",
-    padding: 10,
-    borderRadius: 5,
+  timeInputButton: {
+    backgroundColor: COLORS.background,
+    padding: 15,
+    borderRadius: SIZES.radius,
     marginVertical: 5,
     alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    flexDirection: 'row',
   },
-  timeButtonText: {
-    fontSize: 16,
-    color: "#387478",
+  timeInputText: {
+    ...FONTS.h3,
+    color: COLORS.primary,
+    marginLeft: 8,
   },
   input: {
-    height: 40,
-    borderColor: "#ccc",
+    height: 50,
+    borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
+    borderRadius: SIZES.radius,
+    paddingHorizontal: 15,
     marginVertical: 5,
-    color: "#000",
+    color: COLORS.textPrimary,
+    ...FONTS.body3,
+    backgroundColor: COLORS.background,
+  },
+  buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 25,
+      marginBottom: 10,
   },
   applyButton: {
-    backgroundColor: "#387478",
-    paddingVertical: 12,
-    borderRadius: 5,
-    marginTop: 15,
+    backgroundColor: COLORS.primary,
+    paddingVertical: 15,
+    borderRadius: SIZES.radius,
     alignItems: "center",
+    flex: 1,
+    marginLeft: 10,
+    ...SHADOWS.light,
   },
   applyButtonText: {
-    color: "#fff",
-    fontSize: 16,
+    ...FONTS.h3,
+    color: COLORS.white,
+    fontWeight: 'bold',
   },
   clearButton: {
-    backgroundColor: "#ccc",
-    paddingVertical: 12,
-    borderRadius: 5,
-    marginTop: 10,
+    backgroundColor: COLORS.background,
+    paddingVertical: 15,
+    borderRadius: SIZES.radius,
     alignItems: "center",
+    flex: 1,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   clearButtonText: {
-    color: "#000",
-    fontSize: 16,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-    ...Platform.select({
-      ios: {
-        borderWidth: 1,
-        borderColor: "#ccc",
-        borderRadius: 5,
-      },
-      android: {
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-      },
-    }),
+    ...FONTS.h3,
+    color: COLORS.textSecondary,
   },
   disabledText: {
-    fontSize: 14,
-    color: "#999",
+    ...FONTS.body3,
+    color: COLORS.textLight,
     textAlign: "center",
-    marginVertical: 8,
+    marginVertical: 15,
+    fontStyle: 'italic',
   },
 });
